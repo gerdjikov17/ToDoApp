@@ -23,6 +23,7 @@
 @property (weak, nonatomic) IBOutlet UITextField *passwordTextField;
 @property (strong, nonatomic) NSMutableDictionary<NSString *,NSMutableArray<ToDoModel*> *> *toDosDict;
 @property (strong, nonatomic) NSMutableArray<UserModel *> *users;
+@property (weak, nonatomic) IBOutlet UIView *transperentViewTop;
 
 @end
 
@@ -86,8 +87,8 @@
     usersTableViewController.toDoListDataDelegate = self;
     
     usersTableViewController.modalPresentationStyle = UIModalPresentationPopover;
-    usersTableViewController.popoverPresentationController.sourceView = self.registerButton;
-    usersTableViewController.popoverPresentationController.sourceRect = self.registerButton.bounds;
+    usersTableViewController.popoverPresentationController.sourceView = self.transperentViewTop;
+    usersTableViewController.popoverPresentationController.sourceRect = self.transperentViewTop.bounds;
     usersTableViewController.popoverPresentationController.delegate = self;
     [self presentViewController:usersTableViewController animated:YES completion:nil];
     //[self.navigationController pushViewController:usersTableViewController animated:YES];

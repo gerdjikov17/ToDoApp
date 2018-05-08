@@ -12,6 +12,10 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    self.userImage.layer.cornerRadius = self.userImage.frame.size.height/2;
+    self.userImage.layer.masksToBounds = YES;
+    self.userImage.clipsToBounds = YES;
+    
     // Initialization code
 }
 

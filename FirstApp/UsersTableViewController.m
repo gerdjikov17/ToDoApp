@@ -60,19 +60,18 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
     UsersTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"user_cell" forIndexPath:indexPath];
     UserModel *user = [self.usersDataDelegate userAtIndex:indexPath.row];
     cell.userName.text = user.userName;
+    UIImage *userImage;
     if (user.gender == EnumGenderMale) {
-        cell.userImage.image = [UIImage imageNamed:@"bratzo.png"];
+        userImage = [UIImage imageNamed:@"bratzo.png"];
     }
     else {
-        cell.userImage.image = [UIImage imageNamed:@"melania.png"];
+        userImage = [UIImage imageNamed:@"melania.png"];
     }
-    
-    
-    // Configure the cell...
-    
+    cell.userImage.image = userImage;
     return cell;
 }
 
