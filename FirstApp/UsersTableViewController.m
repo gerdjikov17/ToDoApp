@@ -75,7 +75,9 @@
     return cell;
 }
 
-
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return @"Registered users";
+}
 
 
 /*
