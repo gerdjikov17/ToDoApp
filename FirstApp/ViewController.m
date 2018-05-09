@@ -21,9 +21,9 @@
 @property (weak, nonatomic) IBOutlet UIButton *registerButton;
 @property (weak, nonatomic) IBOutlet UITextField *nameTextField;
 @property (weak, nonatomic) IBOutlet UITextField *passwordTextField;
+@property (weak, nonatomic) IBOutlet UIView *transperentViewTop;
 @property (strong, nonatomic) NSMutableDictionary<NSString *,NSMutableArray<ToDoModel*> *> *toDosDict;
 @property (strong, nonatomic) NSMutableArray<UserModel *> *users;
-@property (weak, nonatomic) IBOutlet UIView *transperentViewTop;
 
 @end
 
@@ -45,7 +45,7 @@
 
 - (IBAction)onLoginButtonTap:(id)sender {
     UserModel *user = [[UserModel alloc] initWithUsername:self.nameTextField.text andPassword:self.passwordTextField.text];
-    if([self authenticateLoginForUserName:user]) {
+    if ([self authenticateLoginForUserName:user]) {
         ToDoListTableViewController *toDoListViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"IdentifierToDoListController"];
         toDoListViewController.dataDelegate = self;
         toDoListViewController.currentUser = user;
@@ -54,26 +54,24 @@
 }
 
 - (BOOL) authenticateLoginForUserName:(UserModel *)user {
-    if([self.users containsObject:user])
-    {
+    if ([self.users containsObject:user]){
         return YES;
     }
-    [self showAlertMessageWithTitle:@"Login failed" andMsg:@"Please try again"];
+    [self showDismissingAlertMessageWithTitle:@"Login failed" andMsg:@"Please try again"];
     return NO;
 }
 
 - (IBAction)onRegisterButtonTap:(id)sender {
     if (([self.nameTextField.text length] < 4) || ([self.passwordTextField.text length] < 6)) {
-        [self showAlertMessageWithTitle:@"Registration failed" andMsg:@"Please try again."];
+        [self showDismissingAlertMessageWithTitle:@"Registration failed" andMsg:@"Please try again."];
     }
     else {
         UserModel *newUser = [[UserModel alloc] initWithUsername:self.nameTextField.text andPassword:self.passwordTextField.text];
-        [self showConfirmPasswordMessage:newUser];
+        [self showConfirmPasswordMessageWithCheckUserExists:newUser];
     }
 }
 
 - (IBAction)onUsersButtonTap:(id)sender {
-    
     UsersTableViewController *usersTableViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"IdentifierUsersTableController"];
     usersTableViewController.usersDataDelegate = self;
     usersTableViewController.toDoListDataDelegate = self;
@@ -84,23 +82,20 @@
     [self presentViewController:usersTableViewController animated:YES completion:nil];
 }
 
-
-- (void) showAlertMessageWithTitle:(NSString *)title andMsg:(NSString *)msg {
+- (void) showDismissingAlertMessageWithTitle:(NSString *)title andMsg:(NSString *)msg {
     UIAlertController *alert= [UIAlertController
                                  alertControllerWithTitle:title
                                  message:msg
                                  preferredStyle:UIAlertControllerStyleAlert];
     
-    [self.navigationController presentViewController:alert animated:YES
-                                               completion:nil];
+    [self presentViewController:alert animated:YES completion:nil];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
-        [alert dismissViewControllerAnimated:YES completion:^{
-        }];
+        [alert dismissViewControllerAnimated:YES completion:nil];
     });
 }
 
-- (void) showConfirmPasswordMessage:(UserModel *)user {
+- (void) showConfirmPasswordMessageWithCheckUserExists:(UserModel *)user {
     UIAlertController *alert= [UIAlertController
                                alertControllerWithTitle:@"Registration"
                                message:@"Please confirm password."
@@ -119,20 +114,16 @@
             {
                 [self.users addObject:user];
                 [UsersDataSerializer saveUsersInUserDefaults:self.users];
-                //[[NSUserDefaults standardUserDefaults] setObject:self.passwordTextField.text forKey:self.nameTextField.text];
             }
             else {
-                [self showAlertMessageWithTitle:@"Registration failed." andMsg:@"Account with this username already exists."];
+                [self showDismissingAlertMessageWithTitle:@"Registration failed." andMsg:@"Account with this username already exists."];
             }
         }
     }];
-    UIAlertAction *cancelBtn = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-        [alert dismissViewControllerAnimated:YES completion:nil];
-    }];
+    UIAlertAction *cancelBtn = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:confirmBtn];
     [alert addAction:cancelBtn];
-    [self.navigationController presentViewController:alert animated:YES
-                                          completion:nil];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (UIModalPresentationStyle) adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
