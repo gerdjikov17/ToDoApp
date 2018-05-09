@@ -12,6 +12,7 @@
 #import "UserModel.h"
 #import "UsersTableViewController.h"
 #import "UsersDataSerializer.h"
+#import "ToDoModel.h"
 
 
 
@@ -154,12 +155,13 @@
     [[self.toDosDict objectForKey:name] addObject:todo];
 }
 
-- (NSArray<UserModel *> *) allUsers{
+- (NSArray<UserModel *> *) allUsers {
     return self.users;
 }
 - (UserModel *) userAtIndex:(NSUInteger)index {
     return [self.users objectAtIndex:index];
 }
+
 
 - (void) applicationWillResignActive:(UIApplication *)application {
     [ToDoDataSerializer saveAllToDos:self.toDosDict];

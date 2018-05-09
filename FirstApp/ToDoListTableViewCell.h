@@ -13,5 +13,6 @@
 @property (weak, nonatomic) IBOutlet UILabel *todoLabel;
 @property (weak, nonatomic) IBOutlet UILabel *timeLabel;
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *categoryLabel;
 
 @end

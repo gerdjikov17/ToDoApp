@@ -8,9 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+
+
 @interface ToDoModel : NSObject<NSCoding>;
 @property (strong, nonatomic) NSDate *timeCreated;
 @property (strong, nonatomic) NSString *text;
+@property (strong, nonatomic) NSString *category;
 
-- (instancetype)initWithText:(NSString *)text andTimeCreated:(NSDate *)timeCreated;
+- (instancetype)initWithText:(NSString *)text andTimeCreated:(NSDate *)timeCreated andCategory:(NSString *)category;
 @end

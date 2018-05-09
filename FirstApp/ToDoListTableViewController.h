@@ -10,8 +10,10 @@
 #import "Protocols.h"
 @class UserModel;
 
-@interface ToDoListTableViewController : UITableViewController
+@interface ToDoListTableViewController : UITableViewController<UISearchBarDelegate>
 @property (weak, nonatomic) id<ToDoListDataDelegate> dataDelegate;
-@property (strong, nonatomic) NSMutableDictionary *toDosDict;
 @property (strong, nonatomic) UserModel *currentUser;
+@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
+- (NSArray<ToDoModel *> *)toDos;
+
 @end

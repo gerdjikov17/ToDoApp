@@ -19,6 +19,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.tableView.tableHeaderView = self.searchBar;
+    self.searchBar.delegate = self;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addTodo)];
 }
 
@@ -31,9 +33,12 @@
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.placeholder = @"Write to do";
     }];
+    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.placeholder = @"Category";
+    }];
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         NSDate * now = [NSDate date];
-        ToDoModel *toDo = [[ToDoModel alloc] initWithText:alertController.textFields[0].text andTimeCreated:now];
+        ToDoModel *toDo = [[ToDoModel alloc] initWithText:alertController.textFields[0].text andTimeCreated:now andCategory:alertController.textFields[1].text];
         [self.dataDelegate addToDo:toDo forName:self.currentUser.userName];
         [self.tableView reloadData];
     }];
@@ -50,14 +55,15 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.dataDelegate toDosForName:self.currentUser.userName].count;
+    return self.toDos.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     ToDoListTableViewCell *cell = (ToDoListTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    ToDoModel *toDo = [self.toDos objectAtIndex:indexPath.row];
     cell.nameLabel.text = self.currentUser.userName;
-    ToDoModel *toDo = [self.dataDelegate toDosForName:self.currentUser.userName][indexPath.row];
     cell.todoLabel.text = toDo.text;
+    cell.categoryLabel.text = toDo.category;
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
     [outputFormatter setDateFormat:@"HH:mm:ss"];
     NSString *newTimeString = [outputFormatter stringFromDate:toDo.timeCreated];
@@ -91,10 +97,26 @@
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+    }
 }
 
 
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    [self.tableView reloadData];
+}
+
+-(NSArray<ToDoModel *> *) filteredTodosWithCategoryString:(NSString *)categoryString {
+    return [[self.dataDelegate toDosForName:self.currentUser.userName] filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(ToDoModel*  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+        return [evaluatedObject.category.lowercaseString hasPrefix:categoryString.lowercaseString];
+    }]];
+}
+
+- (NSArray<ToDoModel *> *)toDos {
+    if ([self.searchBar.text isEqualToString:@""]) {
+        return [self.dataDelegate toDosForName:self.currentUser.userName];
+    }
+    return [self filteredTodosWithCategoryString:self.searchBar.text];
+}
 /*
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
