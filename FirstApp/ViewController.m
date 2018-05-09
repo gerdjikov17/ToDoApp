@@ -58,25 +58,17 @@
     {
         return YES;
     }
-    [self showAlertMessage];
+    [self showAlertMessageWithTitle:@"Login failed" andMsg:@"Please try again"];
     return NO;
 }
 
 - (IBAction)onRegisterButtonTap:(id)sender {
     if (([self.nameTextField.text length] < 4) || ([self.passwordTextField.text length] < 6)) {
-        [self showAlertMessage];
+        [self showAlertMessageWithTitle:@"Registration failed" andMsg:@"Please try again."];
     }
     else {
         UserModel *newUser = [[UserModel alloc] initWithUsername:self.nameTextField.text andPassword:self.passwordTextField.text];
-        if(![self.users containsObject:newUser])
-        {
-            [self.users addObject:newUser];
-            [UsersDataSerializer saveUsersInUserDefaults:self.users];
-            //[[NSUserDefaults standardUserDefaults] setObject:self.passwordTextField.text forKey:self.nameTextField.text];
-        }
-        else {
-            
-        }
+        [self showConfirmPasswordMessage:newUser];
     }
 }
 
@@ -85,40 +77,76 @@
     UsersTableViewController *usersTableViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"IdentifierUsersTableController"];
     usersTableViewController.usersDataDelegate = self;
     usersTableViewController.toDoListDataDelegate = self;
-    
     usersTableViewController.modalPresentationStyle = UIModalPresentationPopover;
     usersTableViewController.popoverPresentationController.sourceView = self.transperentViewTop;
     usersTableViewController.popoverPresentationController.sourceRect = self.transperentViewTop.bounds;
     usersTableViewController.popoverPresentationController.delegate = self;
     [self presentViewController:usersTableViewController animated:YES completion:nil];
-    //[self.navigationController pushViewController:usersTableViewController animated:YES];
 }
 
 
-- (void) showAlertMessage {
+- (void) showAlertMessageWithTitle:(NSString *)title andMsg:(NSString *)msg {
     UIAlertController *alert= [UIAlertController
-                                 alertControllerWithTitle:@"Login fail."
-                                 message:@"Please try again."
+                                 alertControllerWithTitle:title
+                                 message:msg
                                  preferredStyle:UIAlertControllerStyleAlert];
     
     [self.navigationController presentViewController:alert animated:YES
                                                completion:nil];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
         [alert dismissViewControllerAnimated:YES completion:^{
         }];
     });
 }
 
-//- (UIPresentationController *)presentationControllerForPresentedViewController:(UIViewController *)presented presentingViewController:(UIViewController *)presenting sourceViewController:(UIViewController *)source {
-//    return HalfSized
-//}
+- (void) showConfirmPasswordMessage:(UserModel *)user {
+    UIAlertController *alert= [UIAlertController
+                               alertControllerWithTitle:@"Registration"
+                               message:@"Please confirm password."
+                               preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+        textField.placeholder = @"Password";
+        textField.textColor = [UIColor blueColor];
+        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        textField.borderStyle = UITextBorderStyleRoundedRect;
+    }];
+    
+    UIAlertAction *confirmBtn = [UIAlertAction actionWithTitle:@"Confirm" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        if ([alert.textFields[0].text isEqualToString:user.password]) {
+            if(![self doesUserExists:user])
+            {
+                [self.users addObject:user];
+                [UsersDataSerializer saveUsersInUserDefaults:self.users];
+                //[[NSUserDefaults standardUserDefaults] setObject:self.passwordTextField.text forKey:self.nameTextField.text];
+            }
+            else {
+                [self showAlertMessageWithTitle:@"Registration failed." andMsg:@"Account with this username already exists."];
+            }
+        }
+    }];
+    UIAlertAction *cancelBtn = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        [alert dismissViewControllerAnimated:YES completion:nil];
+    }];
+    [alert addAction:confirmBtn];
+    [alert addAction:cancelBtn];
+    [self.navigationController presentViewController:alert animated:YES
+                                          completion:nil];
+}
 
--(UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
+- (UIModalPresentationStyle) adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller {
     return UIModalPresentationNone;
 }
 
-
+-(BOOL) doesUserExists:(UserModel *)newUser {
+    for (UserModel *user in self.users) {
+        if ([user.userName isEqualToString:newUser.userName]) {
+            return YES;
+        }
+    }
+    return NO;
+}
 
 - (NSArray<ToDoModel *> *) toDosForName:(NSString *) name {
     return [self.toDosDict objectForKey:name];
